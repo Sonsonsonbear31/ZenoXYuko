@@ -1,0 +1,630 @@
+--[[
+ ZENONETOP — Full Menu
+ Tab 1 Player: Anti Gummy/Ragdoll/Paintball/Boogie + Speed 3-mode (Vis S2 loop)
+ + Tool Aimbot + Drop Jump/Stand + Insta V1/V2 + TP Down keybinds
+ Tab 2 ESP: Player ESP + Tracker + Anti Lag (Vis logic)
+ Tab 3 Settings: Mobile 3-mode buttons, Lock/Unlock, shape Box/Round/Square,
+ per-button size +/-, Reset Mobile / Reset All
+ Close menu: nút − | Open: mini kéo được | NO keybind to open/close
+]]
+
+repeat task.wait() until game:IsLoaded()
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local TS = game:GetService("TweenService")
+local RS = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HttpService = game:GetService("HttpService")
+
+local LP = Players.LocalPlayer
+if not LP then
+	repeat task.wait() until Players.LocalPlayer
+	LP = Players.LocalPlayer
+end
+local PlayerGui = LP:WaitForChild("PlayerGui", 30) or LP:FindFirstChild("PlayerGui") or game:GetService("CoreGui")
+
+pcall(function()
+	for _, n in ipairs({
+ "ZenonetopHubFullMenu", "ZenonetopHubFullMini", "ZenonetopHubModeBar", "ZenonetopHubActionButtons", "ZenonetopIntro", "ZenonetopHubIntro",
+	}) do
+ local g = PlayerGui:FindFirstChild(n)
+ if g then g:Destroy() end
+	end
+end)
+
+----------------------------------------------------------------
+-- ZENONETOP.CC INTRO (red/black/white, music + skip)
+----------------------------------------------------------------
+do
+	local TweenService = TS
+	local SoundService = game:GetService("SoundService")
+	--============================================================
+	-- INTRO SETTINGS
+	--============================================================
+
+	local MUSIC_URL = "https://files.catbox.moe/qhpfe5.mp3"
+	local MUSIC_FILE = "ShadowVS_Music.mp3"
+	local MUSIC_VOLUME = 0.75
+	local BPM = 100
+	local BEAT = 60 / BPM
+	local BACKGROUND_ID = "rbxassetid://77503307528071"
+
+	--============================================================
+	-- INTRO STATE
+	--============================================================
+
+	local introActive = true
+	local introFinished = false
+	local introSound = nil
+	local introGui = nil
+
+	--============================================================
+	-- SHOW INTRO FIRST
+	--============================================================
+
+	local function createIntro()
+	    -- Clean old intro
+	    for _, name in ipairs({"ZenonetopIntro"}) do
+	        local old = PlayerGui:FindFirstChild(name)
+	        if old then old:Destroy() end
+	    end
+
+	    introGui = Instance.new("ScreenGui")
+	    introGui.Name = "ZenonetopIntro"
+	    introGui.IgnoreGuiInset = true
+	    introGui.ResetOnSpawn = false
+	    introGui.DisplayOrder = 999999
+	    introGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	    introGui.Parent = PlayerGui
+
+	    -- Background (Black)
+	    local background = Instance.new("Frame", introGui)
+	    background.Size = UDim2.fromScale(1, 1)
+	    background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	    background.BorderSizePixel = 0
+	    background.ClipsDescendants = true
+
+	    -- Background Image
+	    local bgImage = Instance.new("ImageLabel", background)
+	    bgImage.AnchorPoint = Vector2.new(0.5, 0.5)
+	    bgImage.Position = UDim2.fromScale(0.5, 0.5)
+	    bgImage.Size = UDim2.fromScale(1.08, 1.08)
+	    bgImage.BackgroundTransparency = 1
+	    bgImage.Image = BACKGROUND_ID
+	    bgImage.ImageTransparency = 1
+	    bgImage.ScaleType = Enum.ScaleType.Crop
+	    bgImage.ZIndex = 1
+
+	    -- Dark Overlay
+	    local dark = Instance.new("Frame", background)
+	    dark.Size = UDim2.fromScale(1, 1)
+	    dark.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	    dark.BackgroundTransparency = 0.35
+	    dark.BorderSizePixel = 0
+	    dark.ZIndex = 2
+
+	    -- Skip Button
+	    local skip = Instance.new("TextButton", introGui)
+	    skip.AnchorPoint = Vector2.new(1, 0)
+	    skip.Position = UDim2.new(1, -14, 0, 14)
+	    skip.Size = UDim2.fromOffset(105, 36)
+	    skip.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
+	    skip.BackgroundTransparency = 0.15
+	    skip.BorderSizePixel = 0
+	    skip.Text = "SKIP INTRO"
+	    skip.TextColor3 = Color3.fromRGB(255, 255, 255)
+	    skip.TextSize = 12
+	    skip.Font = Enum.Font.GothamBold
+	    skip.AutoButtonColor = false
+	    skip.ZIndex = 500
+
+	    local skipCorner = Instance.new("UICorner", skip)
+	    skipCorner.CornerRadius = UDim.new(0, 7)
+
+	    local skipStroke = Instance.new("UIStroke", skip)
+	    skipStroke.Color = Color3.fromRGB(255, 0, 0)
+	    skipStroke.Transparency = 0.5
+	    skipStroke.Thickness = 1
+
+	    -- Flash (Red)
+	    local flash = Instance.new("Frame", introGui)
+	    flash.Size = UDim2.fromScale(1, 1)
+	    flash.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	    flash.BackgroundTransparency = 1
+	    flash.BorderSizePixel = 0
+	    flash.ZIndex = 400
+
+	    -- Main Title - "Zenonetop" (RED)
+	    local introTitle = Instance.new("TextLabel", background)
+	    introTitle.AnchorPoint = Vector2.new(0.5, 0.5)
+	    introTitle.Position = UDim2.fromScale(0.5, 0.47)
+	    introTitle.Size = UDim2.fromScale(1.1, 0.22)
+	    introTitle.BackgroundTransparency = 1
+	    introTitle.Text = "Zenonetop"
+	    introTitle.TextColor3 = Color3.fromRGB(255, 0, 0)
+	    introTitle.TextTransparency = 1
+	    introTitle.TextScaled = true
+	    introTitle.Font = Enum.Font.GothamBlack
+	    introTitle.ZIndex = 20
+
+	    local titleStroke = Instance.new("UIStroke", introTitle)
+	    titleStroke.Color = Color3.fromRGB(0, 0, 0)
+	    titleStroke.Thickness = 3
+	    titleStroke.Transparency = 1
+
+	    -- Subtitle - "cc" (WHITE)
+	    local introSubtitle = Instance.new("TextLabel", background)
+	    introSubtitle.AnchorPoint = Vector2.new(0.5, 0.5)
+	    introSubtitle.Position = UDim2.fromScale(0.5, 0.57)
+	    introSubtitle.Size = UDim2.fromScale(0.4, 0.08)
+	    introSubtitle.BackgroundTransparency = 1
+	    introSubtitle.Text = "cc"
+	    introSubtitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	    introSubtitle.TextTransparency = 1
+	    introSubtitle.TextScaled = true
+	    introSubtitle.Font = Enum.Font.GothamBold
+	    introSubtitle.ZIndex = 20
+
+	    -- Red Accent Line
+	    local accentLine = Instance.new("Frame", background)
+	    accentLine.AnchorPoint = Vector2.new(0.5, 0.5)
+	    accentLine.Position = UDim2.fromScale(0.5, 0.52)
+	    accentLine.Size = UDim2.fromScale(0, 0.003)
+	    accentLine.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	    accentLine.BackgroundTransparency = 1
+	    accentLine.BorderSizePixel = 0
+	    accentLine.ZIndex = 15
+
+	    -- Music Loader
+	    local function loadMusic()
+	        local asset
+	        pcall(function()
+	            if isfile and isfile(MUSIC_FILE) then
+	                asset = getcustomasset(MUSIC_FILE)
+	            end
+	        end)
+	        if not asset then
+	            local success, data = pcall(function()
+	                return game:HttpGet(MUSIC_URL)
+	            end)
+	            if success and data and #data > 1000 then
+	                pcall(function()
+	                    writefile(MUSIC_FILE, data)
+	                end)
+	                pcall(function()
+	                    asset = getcustomasset(MUSIC_FILE)
+	                end)
+	            end
+	        end
+	        return asset
+	    end
+
+	    -- Play Music
+	    task.spawn(function()
+	        local asset = loadMusic()
+	        if not asset or not introActive then return end
+	        introSound = Instance.new("Sound")
+	        introSound.Name = "ZenonetopIntroMusic"
+	        introSound.SoundId = asset
+	        introSound.Volume = MUSIC_VOLUME
+	        introSound.Looped = false
+	        introSound.Parent = SoundService
+	        pcall(function() introSound:Play() end)
+	    end)
+
+	    -- Finish Intro
+	    local function finishIntro()
+	        if introFinished then return end
+	        introFinished = true
+	        introActive = false
+        
+	        if introSound then
+	            pcall(function()
+	                TweenService:Create(introSound, TweenInfo.new(0.35), { Volume = 0 }):Play()
+	            end)
+	            task.delay(0.4, function()
+	                pcall(function()
+	                    introSound:Stop()
+	                    introSound:Destroy()
+	                end)
+	            end)
+	        end
+        
+	        pcall(function() introGui:Destroy() end)
+	    end
+
+	    -- Skip
+	    skip.MouseButton1Click:Connect(finishIntro)
+
+	    -- Skip Hover
+	    skip.MouseEnter:Connect(function()
+	        TweenService:Create(skip, TweenInfo.new(0.12), {
+	            BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+	        }):Play()
+	    end)
+	    skip.MouseLeave:Connect(function()
+	        TweenService:Create(skip, TweenInfo.new(0.12), {
+	            BackgroundColor3 = Color3.fromRGB(20, 0, 0)
+	        }):Play()
+	    end)
+
+	    -- Background Image Fade In
+	    TweenService:Create(bgImage, TweenInfo.new(1.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+	        ImageTransparency = 0
+	    }):Play()
+
+	    -- Slow Zoom
+	    TweenService:Create(bgImage, TweenInfo.new(18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+	        Size = UDim2.fromScale(1.18, 1.18)
+	    }):Play()
+
+	    -- Beat Flash (Red)
+	    task.spawn(function()
+	        while introActive and introGui.Parent do
+	            flash.BackgroundTransparency = 0.75
+	            TweenService:Create(flash, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+	                BackgroundTransparency = 1
+	            }):Play()
+	            task.wait(BEAT)
+	        end
+	    end)
+
+	    -- Title
+	    task.wait(1.5)
+	    if not introActive then return end
+
+	    TweenService:Create(introTitle, TweenInfo.new(0.7, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+	        Size = UDim2.fromScale(0.9, 0.18),
+	        TextTransparency = 0
+	    }):Play()
+
+	    TweenService:Create(titleStroke, TweenInfo.new(0.5), {
+	        Transparency = 0
+	    }):Play()
+
+	    TweenService:Create(accentLine, TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+	        Size = UDim2.fromScale(0.3, 0.003),
+	        BackgroundTransparency = 0
+	    }):Play()
+
+	    -- Title Shake
+	    task.wait(1)
+	    for i = 1, 18 do
+	        if not introActive then return end
+	        introTitle.Position = UDim2.fromScale(
+	            0.5 + math.random(-8, 8) / 1000,
+	            0.47 + math.random(-8, 8) / 1000
+	        )
+	        task.wait(0.025)
+	    end
+	    introTitle.Position = UDim2.fromScale(0.5, 0.47)
+
+	    -- Subtitle
+	    TweenService:Create(introSubtitle, TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+	        TextTransparency = 0
+	    }):Play()
+
+	    -- Hold
+	    task.wait(7)
+	    if not introActive then return end
+
+	    -- Final Beat Flashes
+	    for i = 1, 14 do
+	        if not introActive then return end
+	        flash.BackgroundTransparency = 0
+	        task.wait(0.025)
+	        flash.BackgroundTransparency = 1
+	        task.wait(0.065)
+	    end
+
+	    -- Extra Hold
+	    task.wait(2)
+	    if not introActive then return end
+
+	    -- Title Fade
+	    TweenService:Create(introTitle, TweenInfo.new(1.2, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+	        TextTransparency = 1
+	    }):Play()
+	    TweenService:Create(introSubtitle, TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+	        TextTransparency = 1
+	    }):Play()
+	    TweenService:Create(titleStroke, TweenInfo.new(1), {
+	        Transparency = 1
+	    }):Play()
+	    TweenService:Create(accentLine, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+	        BackgroundTransparency = 1
+	    }):Play()
+
+	    -- Image Fade
+	    TweenService:Create(bgImage, TweenInfo.new(1.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+	        ImageTransparency = 1
+	    }):Play()
+	    TweenService:Create(dark, TweenInfo.new(1.5), {
+	        BackgroundTransparency = 1
+	    }):Play()
+
+	    -- Music Fade
+	    if introSound and introSound.Parent then
+	        TweenService:Create(introSound, TweenInfo.new(1.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+	            Volume = 0
+	        }):Play()
+	    end
+
+	    -- Final Black Fade
+	    local finalFade = Instance.new("Frame", introGui)
+	    finalFade.Size = UDim2.fromScale(1, 1)
+	    finalFade.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	    finalFade.BackgroundTransparency = 1
+	    finalFade.BorderSizePixel = 0
+	    finalFade.ZIndex = 1000
+
+	    TweenService:Create(finalFade, TweenInfo.new(1.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+	        BackgroundTransparency = 0
+	    }):Play()
+
+	    task.wait(1.6)
+	    finishIntro()
+	end
+
+	--============================================================
+	-- START INTRO
+	--============================================================
+
+	task.spawn(function()
+		pcall(createIntro)
+	end)
+end
+
+
+----------------------------------------------------------------
+-- COLORS / STATE
+----------------------------------------------------------------
+local C = {
+	-- Empire-style palette
+	bg = Color3.fromRGB(12, 12, 16), bg2 = Color3.fromRGB(18, 18, 24),
+	card = Color3.fromRGB(24, 24, 32), stroke = Color3.fromRGB(60, 60, 80),
+	accent = Color3.fromRGB(255, 20, 147), text = Color3.fromRGB(255, 255, 255),
+	textDim = Color3.fromRGB(160, 160, 180), on = Color3.fromRGB(60, 220, 110),
+	off = Color3.fromRGB(40, 40, 52), box = Color3.fromRGB(32, 32, 44),
+	danger = Color3.fromRGB(220, 70, 90),
+	modeOnBg = Color3.fromRGB(255, 20, 147), modeOnTxt = Color3.fromRGB(255, 255, 255),
+	modeOffBg = Color3.fromRGB(255, 255, 255), modeOffTxt = Color3.fromRGB(25, 25, 30),
+	btnOn = Color3.fromRGB(50, 210, 100), -- xanh khi ON (Empire style)
+	btnOff = Color3.fromRGB(16, 16, 22),
+}
+
+
+-- Auto-write Vis Auto Steal for loadstring
+pcall(function()
+	if writefile then
+ writefile("Zenonetop_Auto_Steal_Embedded.lua", [==[--[[
+ Auto Steal — full ZENONETOP logic V1 / Semi V1-V2 / V3
+]]
+if _G.__VisAutoStealRunning then
+	pcall(function()
+ -- allow re-exec
+	end)
+end
+_G.__VisAutoStealRunning = true
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
+
+local LP = Players.LocalPlayer
+local PlayerGui = LP:WaitForChild("PlayerGui")
+
+-- Shared state (must match ZENONETOP names used in steal logic)
+autoStealEnabled = false
+selectedStealMode = "Normal"
+autoStealRadius = 60
+autoStealV1PausePercent = 75
+autoStealV2Version = "V1"
+_G.AceStealRadii = _G.AceStealRadii or { Normal = 60, Semi = 9, V3 = 60 }
+_G.AceStealBarProgress = 0
+_G.PulseAutoRadiusEnabled = false
+
+local function saveAceConfig() end
+setAutoStealVisual = nil
+
+-- Minimal StealBar (progress only, no floating bar)
+do
+	local StealBar = {}
+	function StealBar.SetProgress(p)
+ _G.AceStealBarProgress = math.clamp(tonumber(p) or 0, 0, 1)
+	end
+	function StealBar.Reset()
+ _G.AceStealBarProgress = 0
+	end
+	function StealBar.SetState(state)
+ if tostring(state) == "SUCCESS" then
+ _G.AceStealBarProgress = 1
+ end
+	end
+	_G.StealBar = StealBar
+end
+
+
+-- AUTO STEAL — Normal/V1 = Galaxy Auto Steal V1 (hold → 75% → trigger)
+-- ============================================================
+-- ============================================================
+-- AUTO STEAL — Normal/V1 = Pulse Normal V2 FULL logic
+-- (thay Galaxy Auto Steal V1: radius hold + pause 75% + close-range finish)
+-- ============================================================
+_G.__AceSetupNormalAutoSteal = function()
+ _G.AceNormalSteal = _G.AceNormalSteal or {}
+ local A = _G.AceNormalSteal
+ if A.conn then
+ pcall(function()
+ A.conn:Disconnect()
+ end)
+ A.conn = nil
+ end
+ if A.progressConn then
+ pcall(function()
+ A.progressConn:Disconnect()
+ end)
+ A.progressConn = nil
+ end
+ A.enabled = false
+ A.isStealing = false
+ A.stealStartTime = 0
+ A.paused = false
+ A.pauseStarted = nil
+ A.pausedDuration = 0
+ A.data = A.data or {}
+ A.duration = 2.0
+ A.radius = tonumber(autoStealRadius) or 62
+ local function barSet(p, label)
+ pcall(function()
+ if _G.StealBar then
+ _G.StealBar.SetState(label or "STEALING")
+ _G.StealBar.SetProgress(math.clamp(tonumber(p) or 0, 0, 1))
+ end
+ end)
+ end
+ local function barReset()
+ pcall(function()
+ if _G.StealBar then
+ _G.StealBar.Reset()
+ end
+ end)
+ end
+ local function getDetectedPlayerSpeed()
+ local char = LP.Character
+ local root = char and char:FindFirstChild("HumanoidRootPart")
+ local hum = char and char:FindFirstChildOfClass("Humanoid")
+ local speed = 0
+ if root then
+ local v = root.AssemblyLinearVelocity or root.Velocity
+ speed = Vector3.new(v.X, 0, v.Z).Magnitude
+ elseif hum then
+ speed = hum.WalkSpeed or 0
+ end
+ if speed >= 40 then
+ A.lastSpeed = speed
+ end
+ return A.lastSpeed or 62
+ end
+ local function getAutoGrabRadius()
+ local r
+ if _G.PulseAutoRadiusEnabled == true then
+ r = math.clamp(getDetectedPlayerSpeed() + 1, 1, 500)
+ else
+ r = tonumber(autoStealRadius) or A.radius or 62
+ end
+ return math.clamp(r, 1, 500)
+ end
+ local function getAutoGrabPauseFraction()
+ -- no pause by default: if _G.ZenonetopStealPause ~= true → treat as close-enough always (100%)
+ if _G.ZenonetopStealPause ~= true then
+ return 1.0 -- full 0-100 without waiting
+ end
+ local pct = tonumber(autoStealV1PausePercent) or 75
+ pct = math.clamp(pct, 1, 99)
+ return pct / 100
+ end
+ local function isMyPlotByName(plotName)
+ local plots = workspace:FindFirstChild("Plots")
+ if not plots then
+ return false
+ end
+ local plot = plots:FindFirstChild(plotName)
+ if not plot then
+ return false
+ end
+ local sign = plot:FindFirstChild("PlotSign")
+ if sign then
+ local yb = sign:FindFirstChild("YourBase")
+ if yb and yb:IsA("BillboardGui") then
+ return yb.Enabled == true
+ end
+ local frame = sign:FindFirstChild("SurfaceGui") and sign.SurfaceGui:FindFirstChild("Frame")
+ local label = frame and frame:FindFirstChild("TextLabel")
+ if label then
+ local owner = label.Text:gsub("'s [Bb]ase$", ""):gsub("%s+$", "")
+ if LP.DisplayName and owner == LP.DisplayName then
+ return true
+ end
+ if LP.Name and owner == LP.Name then
+ return true
+ end
+ end
+ end
+ return false
+ end
+ local function findNearestPrompt()
+ local char = LP.Character
+ if not char then
+ return nil
+ end
+ local root = char:FindFirstChild("HumanoidRootPart")
+ if not root then
+ return nil
+ end
+ local plots = workspace:FindFirstChild("Plots")
+ if not plots then
+ return nil
+ end
+ local activeRadius = getAutoGrabRadius()
+ local nearest, dist = nil, math.huge
+ for _, plot in ipairs(plots:GetChildren()) do
+ if not isMyPlotByName(plot.Name) then
+ local pods = plot:FindFirstChild("AnimalPodiums")
+ if pods then
+ for _, pod in ipairs(pods:GetChildren()) do
+ local base = pod:FindFirstChild("Base")
+ local sp = base and base:FindFirstChild("Spawn")
+ if sp then
+ local d = (sp.Position - root.Position).Magnitude
+ if d <= activeRadius and d < dist then
+ local att = sp:FindFirstChild("PromptAttachment")
+ local prompts = {}
+ if att then
+ for _, prompt in ipairs(att:GetChildren()) do
+ if prompt:IsA("ProximityPrompt") then table.insert(prompts, prompt) end
+ end
+ end
+ if sp then
+ for _, obj in ipairs(sp:GetDescendants()) do
+ if obj:IsA("ProximityPrompt") then table.insert(prompts, obj) end
+ end
+ end
+ for _, prompt in ipairs(prompts) do
+ local act = tostring(prompt.ActionText or ""):lower()
+ local ok = act:find("steal", 1, true) or act:find("steal", 1, true) or act:find("steal", 1, true)
+ or act:find("grab", 1, true) or act:find("take", 1, true) or act == ""
+ if ok or prompt.Enabled then
+ nearest, dist = prompt, d
+ end
+ end
+ end
+ end
+ end
+ end
+ end
+ end
+ return nearest
+ end
+ local function executeSteal(prompt)
+ if A.isStealing then
+ return
+ end
+ if not prompt then
+ return
+ end
+ if not A.data[prompt] then
+ A.data[prompt] = { hold = {}, trigger = {}, ready = true }
+ if getconnections then
+ local okHold, holds = pcall(getconnections, prompt.PromptButtonHoldBegan)
+ if okHold and type(holds) == "table" then
+ for _, c in ipairs(holds) do
+ if c.Function then
+ table.insert(A.data[prompt].hold, c.Function)
+ end
+ end
+ end
+ local okTrig, triggers = pcall(getconnections, prompt.Tr
